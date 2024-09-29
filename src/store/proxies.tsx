@@ -72,7 +72,7 @@ export function fetchProxies(apiConfig: ClashAPIConfig) {
       const name = proxyNames[i];
       const { history } = proxies[name] || { history: [] };
       const h = history[history.length - 1];
-      if (h && typeof h.delay === 'number') {
+      if (h) {
         delayNext[name] = { number: h.delay };
       }
     }
