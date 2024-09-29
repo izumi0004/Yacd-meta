@@ -20,11 +20,16 @@ jobs:
         run: |
           pnpm install --no-frozen-lockfile
           pnpm build
-      - name: Deploy
-        uses: crazy-max/ghaction-github-pages@v2
+      - name: Get version
+        id: get_version
+        run: |
+          echo version=$(node -p "require('./package.json').version") >> $GITHUB_OUTPUT
+      - name: Zip output folder
+        run: |
+          cd public
+          zip -r ../Yacd-meta.zip .
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          target_branch: gh-pages
-          build_dir: public
-          fqdn: yacd.metacubex.one
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.get_version.outputs.version }}
+          files: Yacd-meta.zip
