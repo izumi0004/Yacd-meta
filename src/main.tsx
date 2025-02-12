@@ -18,7 +18,7 @@ root.render(<App />);
 swRegistration.register();
 
 // eslint-disable-next-line no-console
-console.log('Checkout the repo: https://github.com/MetaCubeX/yacd');
+console.log('Checkout the repo: https://github.com/izumi0004/Yacd-meta');
 // eslint-disable-next-line no-console
 console.log('Version:', __VERSION__);
 
