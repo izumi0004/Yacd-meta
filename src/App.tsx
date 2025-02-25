@@ -3,9 +3,7 @@ import { QueryClientProvider } from 'react-query';
 import { HashRouter as Router, Route, RouteObject, Routes, useRoutes } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 
-import APIConfig from '~/components//APIConfig';
 import { About } from '~/components/about/About';
-import APIDiscovery from '~/components/APIDiscovery';
 import ErrorBoundary from '~/components/ErrorBoundary';
 import Home from '~/components/Home';
 import Loading from '~/components/Loading';
@@ -41,7 +39,6 @@ const routes = [
 function SideBarApp() {
   return (
     <>
-      <APIDiscovery />
       <SideBar />
       <div className={styles.content}>
         <Suspense fallback={<Loading2 />}>{useRoutes(routes)}</Suspense>
@@ -60,7 +57,6 @@ const App = () => (
             <Suspense fallback={<Loading />}>
               <Router>
                 <Routes>
-                  <Route path="/backend" element={<APIConfig />} />
                   <Route path="*" element={<SideBarApp />} />
                 </Routes>
               </Router>

@@ -1,10 +1,4 @@
-import type { ClashAPIConfig } from '~/types';
-
-export type ClashAPIConfigWithAddedAt = ClashAPIConfig & { addedAt?: number };
 export type StateApp = {
-  selectedClashAPIConfigIndex: number;
-  clashAPIConfigs: ClashAPIConfigWithAddedAt[];
-
   latencyTestUrl: string;
   selectedChartStyleIndex: number;
   theme: string;
@@ -119,12 +113,6 @@ export type StateConfigs = {
   haveFetchedConfig: boolean;
 };
 
-///// store.modals
-
-export type StateModals = {
-  apiConfig: boolean;
-};
-
 //////
 
 export type State = {
@@ -132,7 +120,6 @@ export type State = {
   configs: StateConfigs;
   proxies: StateProxies;
   logs: StateLogs;
-  modals: StateModals;
 };
 
 export type GetStateFn = () => State;

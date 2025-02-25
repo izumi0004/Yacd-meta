@@ -1,16 +1,13 @@
 import { DispatchFn, GetStateFn, State, StateApp } from '~/store/types';
 
+import { getBaseURL } from '../misc/request-helper';
 import { loadState, saveState } from '../misc/storage';
-import { debounce, trimTrailingSlash } from '../misc/utils';
-import { fetchConfigs } from './configs';
-import { closeModal } from './modals';
+import { debounce } from '../misc/utils';
 
-export const getClashAPIConfig = (s: State) => {
-  const idx = s.app.selectedClashAPIConfigIndex;
-  return s.app.clashAPIConfigs[idx];
+const apiConfig = { baseURL: getBaseURL() };
+export const getClashAPIConfig = (_s: State) => {
+  return apiConfig;
 };
-export const getSelectedClashAPIConfigIndex = (s: State) => s.app.selectedClashAPIConfigIndex;
-export const getClashAPIConfigs = (s: State) => s.app.clashAPIConfigs;
 export const getTheme = (s: State) => s.app.theme;
 export const getSelectedChartStyleIndex = (s: State) => s.app.selectedChartStyleIndex;
 export const getLatencyTestUrl = (s: State) => s.app.latencyTestUrl;
@@ -21,76 +18,6 @@ export const getAutoCloseOldConns = (s: State) => s.app.autoCloseOldConns;
 export const getLogStreamingPaused = (s: State) => s.app.logStreamingPaused;
 
 const saveStateDebounced = debounce(saveState, 600);
-
-function findClashAPIConfigIndex(getState: GetStateFn, { baseURL, secret }) {
-  const arr = getClashAPIConfigs(getState());
-  for (let i = 0; i < arr.length; i++) {
-    const x = arr[i];
-    if (x.baseURL === baseURL && x.secret === secret) return i;
-  }
-}
-
-export function addClashAPIConfig({ baseURL, secret }) {
-  return async (dispatch: DispatchFn, getState: GetStateFn) => {
-    const idx = findClashAPIConfigIndex(getState, { baseURL, secret });
-    // already exists
-    if (idx) return;
-
-    const clashAPIConfig = { baseURL, secret, addedAt: Date.now() };
-    dispatch('addClashAPIConfig', (s) => {
-      s.app.clashAPIConfigs.push(clashAPIConfig);
-    });
-    // side effect
-    saveState(getState().app);
-  };
-}
-
-export function removeClashAPIConfig({ baseURL, secret }) {
-  return async (dispatch: DispatchFn, getState: GetStateFn) => {
-    const idx = findClashAPIConfigIndex(getState, { baseURL, secret });
-    dispatch('removeClashAPIConfig', (s) => {
-      s.app.clashAPIConfigs.splice(idx, 1);
-    });
-    // side effect
-    saveState(getState().app);
-  };
-}
-
-export function selectClashAPIConfig({ baseURL, secret }) {
-  return async (dispatch: DispatchFn, getState: GetStateFn) => {
-    const idx = findClashAPIConfigIndex(getState, { baseURL, secret });
-    const curr = getSelectedClashAPIConfigIndex(getState());
-    if (curr !== idx) {
-      dispatch('selectClashAPIConfig', (s) => {
-        s.app.selectedClashAPIConfigIndex = idx;
-      });
-    }
-    // side effect
-    saveState(getState().app);
-
-    // manual clean up is too complex
-    // we just reload the app
-    try {
-      window.location.reload();
-    } catch (err) {
-      // ignore
-    }
-  };
-}
-
-// unused
-export function updateClashAPIConfig({ baseURL, secret }) {
-  return async (dispatch: DispatchFn, getState: GetStateFn) => {
-    const clashAPIConfig = { baseURL, secret };
-    dispatch('appUpdateClashAPIConfig', (s) => {
-      s.app.clashAPIConfigs[0] = clashAPIConfig;
-    });
-    // side effect
-    saveState(getState().app);
-    dispatch(closeModal('apiConfig'));
-    dispatch(fetchConfigs(clashAPIConfig));
-  };
-}
 
 const rootEl = document.querySelector('html');
 type ThemeType = 'dark' | 'light' | 'auto';
@@ -149,16 +76,8 @@ export function updateCollapsibleIsOpen(prefix: string, name: string, v: boolean
   };
 }
 
-const defaultClashAPIConfig = {
-  baseURL: document.getElementById('app')?.getAttribute('data-base-url') ?? 'http://127.0.0.1:9090',
-  secret: '',
-  addedAt: 0,
-};
 // type Theme = 'light' | 'dark';
 const defaultState: StateApp = {
-  selectedClashAPIConfigIndex: 0,
-  clashAPIConfigs: [defaultClashAPIConfig],
-
   latencyTestUrl: 'https://www.gstatic.com/generate_204',
   selectedChartStyleIndex: 0,
   theme: 'auto',
@@ -188,27 +107,6 @@ export function initialState() {
   let s = loadState();
   s = { ...defaultState, ...s };
   const query = parseConfigQueryString();
-
-  const conf = s.clashAPIConfigs[s.selectedClashAPIConfigIndex];
-  if (conf) {
-    const url = new URL(conf.baseURL);
-    if (query.hostname) {
-      if (query.hostname.indexOf('http') === 0) {
-        url.href = decodeURIComponent(query.hostname);
-      } else {
-        url.hostname = query.hostname;
-      }
-    }
-    if (query.port) {
-      url.port = query.port;
-    }
-    // url.href is a stringifier and it appends a trailing slash
-    // that is not we want
-    conf.baseURL = trimTrailingSlash(url.href);
-    if (query.secret) {
-      conf.secret = query.secret;
-    }
-  }
 
   if (query.theme === 'dark' || query.theme === 'light') {
     s.theme = query.theme;

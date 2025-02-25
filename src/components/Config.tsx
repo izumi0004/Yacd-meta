@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DownloadCloud, LogOut, RotateCw, Trash2 } from 'react-feather';
+import { DownloadCloud, RotateCw, Trash2 } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from 'react-query';
 
@@ -20,7 +20,6 @@ import {
   updateGeoDatabasesFile,
   upgradeCore,
 } from '../store/configs';
-import { openModal } from '../store/modals';
 import Button from './Button';
 import s0 from './Config.module.scss';
 import ContentHeader from './ContentHeader';
@@ -126,10 +125,6 @@ function ConfigImpl({
     }
     refConfigs.current = configs;
   }, [configs]);
-
-  const openAPIConfigModal = useCallback(() => {
-    dispatch(openModal('apiConfig'));
-  }, [dispatch]);
 
   const setConfigState = useCallback(
     (name: string, val: any) => {
@@ -262,7 +257,11 @@ function ConfigImpl({
         <div>
           <div className={s0.label}>Mode</div>
           <Select
-            options={configState['mode-list'] ? configState['mode-list'].map(value => [value, value]) : modeOptions}
+            options={
+              configState['mode-list']
+                ? configState['mode-list'].map((value) => [value, value])
+                : modeOptions
+            }
             selected={configState['mode-list'] ? configState.mode : configState.mode.toLowerCase()}
             onChange={(e) => handleInputOnChange({ name: 'mode', value: e.target.value })}
           />
@@ -446,12 +445,6 @@ function ConfigImpl({
             {t('current_backend')}
             <p>{getBackendContent(version) + apiConfig?.baseURL}</p>
           </div>
-          <div className={s0.label}>Action</div>
-          <Button
-            start={<LogOut size={16} />}
-            label={t('switch_backend')}
-            onClick={openAPIConfigModal}
-          />
         </div>
       </div>
     </div>
